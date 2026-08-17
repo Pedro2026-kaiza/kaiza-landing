@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaiza — Valor do Ask</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --teal: #028090;
+    --seafoam: #00A896;
+    --mint: #02C39A;
+    --dark: #0B2E33;
+    --bgsoft: #EAF4F3;
+    --muted: #5C7278;
+    --amber: #C97A2B;
+    --red: #B3452C;
+    --page: #FAF9F6;
+    --card: #FFFFFF;
+    --line: #DCE6E4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+
+  .backlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 18px;
+  }
+  .backlink:hover { color: var(--teal); }
+
+  .titlerow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 6px; }
+  h1 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 30px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .readonly-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--bgsoft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
+  .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px 26px;
+  }
+  .card + .card { margin-top: 20px; }
+  h2 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0 0 4px;
+    color: var(--teal);
+  }
+  .cardnote { font-size: 12px; color: var(--muted); margin: 0 0 18px; }
+
+  .field { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .field label { font-size: 13px; color: var(--dark); flex: 1; }
+  .field input[type=number] {
+    width: 108px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; color: var(--dark);
+    background: var(--page);
+  }
+  .field .unit { font-size: 11px; color: var(--muted); width: 34px; }
+
+  .divider { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  td.label { color: var(--dark); }
+  td.val { text-align: right; font-family: 'IBM Plex Mono', monospace; color: var(--dark); white-space: nowrap; }
+  tr.total td { border-top: 2px solid var(--teal); border-bottom: none; padding-top: 12px; font-weight: 600; }
+  tr.total td.val { color: var(--teal); font-size: 15px; }
+  tr.sub td { color: var(--muted); }
+  tr.sub td.val { color: var(--muted); }
+
+  .askbox { margin-top: 20px; }
+  .askrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .askrow label { font-size: 13px; }
+  .askrow input { width: 130px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-align: right; background: var(--page); color: var(--dark); }
+
+  .gauge-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 18px 0 6px; }
+  .gauge { position: relative; height: 34px; border-radius: 8px; background: var(--bgsoft); overflow: hidden; border: 1px solid var(--line); }
+  .gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; transition: width 0.25s ease, background 0.25s ease; }
+  .gauge-buffer-text {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--dark); z-index: 2;
+  }
+
+  .statusnote { margin-top: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .statusnote b { color: var(--dark); }
+
+  /* Read-only mode: inputs are display-only, no editing */
+  input:disabled {
+    opacity: 1;
+    color: var(--dark);
+    -webkit-text-fill-color: var(--dark);
+    cursor: default;
+    background: var(--page);
+  }
+  input[type=range]:disabled { cursor: default; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.html">&larr; Voltar para a página da Kaiza</a>
+  <div class="titlerow">
+    <h1>Valor do ask — Kaiza</h1>
+    <span class="readonly-badge">Somente leitura</span>
+  </div>
+  <p class="sub">Detalhamento do valor de captação e como ele se distribui entre as etapas de validação. Esta é uma visão de consulta — os valores não podem ser editados aqui.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>MVP 1 — validação manual</h2>
+        <p class="cardnote">Balanças de precisão, 15 a 30 famílias</p>
+        <div class="field"><label>Custo por balança</label><input type="number" id="balancaUnit" value="100" step="5" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Quantidade de famílias</label><input type="number" id="balancaQtd" value="20" step="1" disabled><span class="unit">un.</span></div>
+      </div>
+
+      <div class="card">
+        <h2>MVP 2 — kit de hardware</h2>
+        <p class="cardnote">120 kits (100 em uso + 20 de reposição) — valores base, antes da margem</p>
+        <div class="field"><label>Componentes base do kit</label><input type="number" id="compBase" value="215" step="5" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Sistema de leitura (estimativa)</label><input type="number" id="leitura" value="305" step="5" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Quantidade de kits</label><input type="number" id="kits" value="120" step="1" disabled><span class="unit">un.</span></div>
+      </div>
+
+      <div class="card">
+        <h2>MVP 2 — software e painel</h2>
+        <p class="cardnote">Custos únicos, não escalam por kit — valores base, antes da margem</p>
+        <div class="field"><label>Software de borda</label><input type="number" id="software" value="12150" step="100" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Painel de acompanhamento</label><input type="number" id="painel" value="2500" step="100" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Estrutura da prateleira</label><input type="number" id="estrutura" value="0" step="100" disabled><span class="unit">R$</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Margem de segurança do MVP2</h2>
+        <p class="cardnote">Adicional percentual aplicado sobre todas as linhas do MVP2 acima, de uma vez só</p>
+        <div class="field">
+          <label>Margem de segurança</label>
+          <input type="range" id="margemRange" min="0" max="50" value="0" step="1" style="flex:1; margin: 0 10px;" disabled>
+          <span class="unit" id="margemPct" style="width:40px; font-family:'IBM Plex Mono',monospace; color:var(--teal); font-weight:600;">0%</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Pró-labore do fundador</h2>
+        <p class="cardnote">Sócio, abaixo da média de mercado</p>
+        <div class="field"><label>Valor mensal</label><input type="number" id="prolaboreMes" value="9000" step="500" disabled><span class="unit">R$</span></div>
+        <div class="field"><label>Duração</label><input type="number" id="prolaboreMeses" value="10" step="1" disabled><span class="unit">meses</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Total itemizado</h2>
+        <p class="cardnote">Soma de todas as linhas ao lado</p>
+        <table>
+          <tr class="sub"><td class="label">Pesquisa de profundidade</td><td class="val">trabalho próprio</td></tr>
+          <tr><td class="label">MVP 1 — balanças</td><td class="val" id="outMvp1">—</td></tr>
+          <tr><td class="label">MVP 2 — hardware (kits)</td><td class="val" id="outHardware">—</td></tr>
+          <tr><td class="label">MVP 2 — software + painel</td><td class="val" id="outSoftware">—</td></tr>
+          <tr><td class="label">MVP 2 — estrutura</td><td class="val" id="outEstrutura">—</td></tr>
+          <tr class="sub"><td class="label">+ margem de segurança (<span id="outMargemPct">0%</span>)</td><td class="val" id="outMargemValor">—</td></tr>
+          <tr class="sub"><td class="label">Ajustes finais</td><td class="val">trabalho próprio</td></tr>
+          <tr><td class="label">Pró-labore</td><td class="val" id="outProlabore">—</td></tr>
+          <tr class="total"><td class="label">Total itemizado</td><td class="val" id="outTotal">—</td></tr>
+        </table>
+
+        <div class="askbox">
+          <div class="askrow">
+            <label>Ask arredondado</label>
+            <input type="number" id="ask" value="230000" step="5000" disabled>
+          </div>
+          <div class="gauge-label"><span>Usado do ask</span><span>Margem restante</span></div>
+          <div class="gauge">
+            <div class="gauge-fill" id="gaugeFill"></div>
+            <div class="gauge-buffer-text" id="gaugeText">—</div>
+          </div>
+          <p class="statusnote" id="statusNote"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function fmt(n) {
+  return 'R$ ' + Math.round(n).toLocaleString('pt-BR');
+}
+function num(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? 0 : v;
+}
+function calc() {
+  const margemPct = num('margemRange');
+  document.getElementById('margemPct').textContent = margemPct + '%';
+  document.getElementById('outMargemPct').textContent = margemPct + '%';
+  const fator = 1 + (margemPct / 100);
+
+  const mvp1 = num('balancaUnit') * num('balancaQtd');
+  const hardwareBase = (num('compBase') + num('leitura')) * num('kits');
+  const softwarePainelBase = num('software') + num('painel');
+  const estruturaBase = num('estrutura');
+
+  const hardware = hardwareBase * fator;
+  const softwarePainel = softwarePainelBase * fator;
+  const estrutura = estruturaBase * fator;
+  const margemValor = (hardware + softwarePainel + estrutura) - (hardwareBase + softwarePainelBase + estruturaBase);
+
+  const prolabore = num('prolaboreMes') * num('prolaboreMeses');
+  const total = mvp1 + hardware + softwarePainel + estrutura + prolabore;
+  const ask = num('ask');
+  const buffer = ask - total;
+
+  document.getElementById('outMvp1').textContent = fmt(mvp1);
+  document.getElementById('outHardware').textContent = fmt(hardware);
+  document.getElementById('outSoftware').textContent = fmt(softwarePainel);
+  document.getElementById('outEstrutura').textContent = estruturaBase > 0 ? fmt(estrutura) : 'a definir';
+  document.getElementById('outMargemValor').textContent = margemPct > 0 ? '+ ' + fmt(margemValor) : fmt(0);
+  document.getElementById('outProlabore').textContent = fmt(prolabore);
+  document.getElementById('outTotal').textContent = fmt(total);
+
+  const pctUsed = ask > 0 ? Math.min(100, Math.max(0, (total / ask) * 100)) : 0;
+  const fill = document.getElementById('gaugeFill');
+  fill.style.width = pctUsed + '%';
+
+  let color = 'var(--mint)';
+  let note = 'Margem confortável para imprevistos.';
+  if (buffer < 0) {
+    color = 'var(--red)';
+    note = 'O total itemizado já ultrapassa o ask atual — falta cobrir ' + fmt(Math.abs(buffer)) + '.';
+  } else if (pctUsed > 80) {
+    color = 'var(--amber)';
+    note = 'Margem apertada — pouco espaço para novas surpresas de custo.';
+  } else if (pctUsed > 60) {
+    color = 'var(--seafoam)';
+    note = 'Margem razoável, mas vale acompanhar de perto.';
+  }
+  fill.style.background = color;
+  document.getElementById('gaugeText').textContent =
+    (buffer >= 0 ? fmt(buffer) + ' de margem' : fmt(buffer) + ' (estourado)');
+  document.getElementById('statusNote').innerHTML = '<b>' + Math.round(pctUsed) + '% do ask usado.</b> ' + note;
+}
+calc();
+</script>
+</body>
+</html>
