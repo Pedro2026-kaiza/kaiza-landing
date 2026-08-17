@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaiza — Anticipating household restocking</title>
+<meta name="description" content="Kaiza predicts household restocking before the shortage becomes urgent, reducing emergency purchases and recovering abandoned carts in grocery e-commerce.">
+<style>
+  :root {
+    --teal: #028090;
+    --seafoam: #00A896;
+    --mint: #02C39A;
+    --bg: #F7FBFA;
+    --bg-alt: #EFF7F5;
+    --text: #0B2B2E;
+    --text-muted: #4B6A6C;
+    --border: #DCEBE8;
+    --max-width: 960px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--teal); }
+
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  header.site-header {
+    padding: 28px 0;
+  }
+
+  header.site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--teal);
+  }
+
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--teal);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .lang-toggle:hover {
+    border-color: var(--seafoam);
+    background: var(--bg-alt);
+  }
+
+  /* Ambient watermark texture across the page */
+  body {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Ccircle cx='24' cy='26' r='2' fill='%23028090' opacity='0.35'/%3E%3Ccircle cx='100' cy='70' r='3' fill='%2300A896' opacity='0.3'/%3E%3Cline x1='24' y1='26' x2='100' y2='70' stroke='%23028090' stroke-width='0.5' opacity='0.25'/%3E%3Ccircle cx='60' cy='120' r='1.6' fill='%2302C39A' opacity='0.3'/%3E%3Cline x1='100' y1='70' x2='60' y2='120' stroke='%2302C39A' stroke-width='0.5' opacity='0.25'/%3E%3Ccircle cx='130' cy='20' r='1.4' fill='%23028090' opacity='0.25'/%3E%3Cline x1='100' y1='70' x2='130' y2='20' stroke='%2300A896' stroke-width='0.4' opacity='0.2'/%3E%3C/svg%3E");
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 72px 0 64px;
+    background: linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-art {
+    position: absolute;
+    top: -60px;
+    right: -80px;
+    width: 560px;
+    height: 560px;
+    max-width: 70vw;
+    opacity: 0.16;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 780px;
+    color: var(--text);
+  }
+
+  .hero .accent {
+    color: var(--seafoam);
+  }
+
+  .hero p.subheadline {
+    margin-top: 20px;
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+  }
+
+  .hero .cta-row {
+    margin-top: 32px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.98rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary {
+    background: var(--teal);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(2, 128, 144, 0.25);
+  }
+
+  /* Sections */
+  section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-of-type {
+    border-bottom: none;
+  }
+
+  .section-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--mint);
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    max-width: 640px;
+  }
+
+  .lead {
+    margin-top: 18px;
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 680px;
+  }
+
+  .lead + .lead {
+    margin-top: 12px;
+  }
+
+  #solucao {
+    position: relative;
+    overflow: hidden;
+  }
+
+  #solucao .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .solucao-art {
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 380px;
+    height: 380px;
+    max-width: 60vw;
+    opacity: 0.14;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Solution cards */
+  .cards {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg-alt);
+    color: var(--teal);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    color: var(--text-muted);
+    font-size: 0.96rem;
+  }
+
+  /* Stage */
+  .stage-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--bg-alt);
+    color: var(--teal);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  .timeline {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .timeline-step .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--mint);
+  }
+
+  .timeline-arrow {
+    align-self: center;
+    color: var(--text-muted);
+  }
+
+  /* Founder */
+  .founder {
+    margin-top: 28px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 620px;
+  }
+
+  .founder .avatar {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--mint));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .founder h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .founder p {
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-size: 0.96rem;
+  }
+
+  /* Contact */
+  .contact-section {
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+  }
+
+  .contact-box {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.96rem;
+    transition: border-color 0.15s ease;
+  }
+
+  .contact-link:hover {
+    border-color: var(--seafoam);
+  }
+
+  .contact-link .icon {
+    color: var(--teal);
+  }
+
+  footer {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 56px 0 48px; }
+    section { padding: 48px 0; }
+    .founder { flex-direction: column; align-items: flex-start; }
+    .hero-art { opacity: 0.1; width: 380px; }
+    .solucao-art { opacity: 0.09; width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <span class="logo">Kaiza Intelligence</span>
+    <a class="lang-toggle" href="index.html" title="Ver em português">PT</a>
+  </div>
+</header>
+
+<section class="hero">
+  <svg class="hero-art" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <line x1="60" y1="80" x2="220" y2="60" stroke="#028090" stroke-width="1.2"/>
+    <line x1="220" y1="60" x2="330" y2="140" stroke="#00A896" stroke-width="1.2"/>
+    <line x1="220" y1="60" x2="180" y2="200" stroke="#028090" stroke-width="1"/>
+    <line x1="180" y1="200" x2="330" y2="140" stroke="#02C39A" stroke-width="1"/>
+    <line x1="180" y1="200" x2="90" y2="280" stroke="#00A896" stroke-width="1"/>
+    <line x1="180" y1="200" x2="290" y2="300" stroke="#028090" stroke-width="1"/>
+    <line x1="290" y1="300" x2="330" y2="140" stroke="#02C39A" stroke-width="0.8"/>
+    <line x1="60" y1="80" x2="90" y2="280" stroke="#02C39A" stroke-width="0.8"/>
+    <circle cx="60" cy="80" r="6" fill="#028090"/>
+    <circle cx="220" cy="60" r="9" fill="#00A896"/>
+    <circle cx="330" cy="140" r="5" fill="#02C39A"/>
+    <circle cx="180" cy="200" r="12" fill="none" stroke="#028090" stroke-width="1.5"/>
+    <circle cx="90" cy="280" r="4" fill="#00A896"/>
+    <circle cx="290" cy="300" r="7" fill="#02C39A"/>
+    <rect x="240" y="220" width="18" height="18" fill="none" stroke="#028090" stroke-width="1.2" transform="rotate(20 249 229)"/>
+    <rect x="30" y="150" width="12" height="12" fill="none" stroke="#00A896" stroke-width="1" transform="rotate(-15 36 156)"/>
+    <circle cx="180" cy="200" r="60" fill="none" stroke="#02C39A" stroke-width="0.6"/>
+  </svg>
+  <div class="container">
+    <h1>Anticipating household restocking before <span class="accent">the shortage becomes urgent</span>.</h1>
+    <p class="subheadline">Household consumption forecasting that reduces emergency purchases and recovers abandoned carts in grocery e-commerce.</p>
+    <div class="cta-row">
+      <a href="mailto:pedro.kaiza@hotmail.com" class="btn btn-primary">Talk to Kaiza</a>
+    </div>
+  </div>
+</section>
+
+<section id="problema">
+  <div class="container">
+    <div class="section-label">The problem</div>
+    <h2>Customers only realize something is about to run out once it already has.</h2>
+    <p class="lead">In Brazil's grocery e-commerce, between 72.5% and 73% of carts are abandoned (ECDB, 2025). Without consumption forecasting, purchasing becomes a reaction to a shortage that has already happened.</p>
+    <p class="lead">That last-minute purchase costs more for the customer and represents lost demand for retailers.</p>
+  </div>
+</section>
+
+<section id="solucao">
+  <svg class="solucao-art" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <line x1="40" y1="240" x2="150" y2="180" stroke="#028090" stroke-width="1"/>
+    <line x1="150" y1="180" x2="120" y2="60" stroke="#00A896" stroke-width="1"/>
+    <line x1="150" y1="180" x2="250" y2="90" stroke="#02C39A" stroke-width="1"/>
+    <line x1="120" y1="60" x2="250" y2="90" stroke="#028090" stroke-width="0.7"/>
+    <circle cx="40" cy="240" r="5" fill="#00A896"/>
+    <circle cx="150" cy="180" r="10" fill="none" stroke="#028090" stroke-width="1.4"/>
+    <circle cx="120" cy="60" r="4" fill="#02C39A"/>
+    <circle cx="250" cy="90" r="6" fill="#028090"/>
+    <rect x="60" y="150" width="14" height="14" fill="none" stroke="#00A896" stroke-width="1" transform="rotate(30 67 157)"/>
+    <circle cx="150" cy="180" r="45" fill="none" stroke="#02C39A" stroke-width="0.5"/>
+  </svg>
+  <div class="container">
+    <div class="section-label">The solution</div>
+    <h2>Forecasting restocking before the need becomes urgent.</h2>
+    <p class="lead">Kaiza identifies household consumption and anticipates when a product is about to run out, connecting that need to a network of retail and delivery partners competing for the order.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="num">1</div>
+        <h3>Identification</h3>
+        <p>Household sensing recognizes the product and tracks its consumption over time.</p>
+      </div>
+      <div class="card">
+        <div class="num">2</div>
+        <h3>Anticipation</h3>
+        <p>The restocking forecast arrives before the shortage, at the right moment to act.</p>
+      </div>
+      <div class="card">
+        <div class="num">3</div>
+        <h3>Connection</h3>
+        <p>The anticipated demand is routed to a network of retail and delivery partners.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="estagio">
+  <div class="container">
+    <div class="section-label">Current stage</div>
+    <h2>Startup in pre-seed validation stage.</h2>
+    <span class="stage-tag">Pre-seed · Validation</span>
+    <p class="lead">The validation plan is structured in layers, advancing progressively and carefully.</p>
+    <div class="timeline">
+      <div class="timeline-step"><span class="dot"></span>In-depth research</div>
+      <span class="timeline-arrow">→</span>
+      <div class="timeline-step"><span class="dot"></span>MVP1</div>
+      <span class="timeline-arrow">→</span>
+      <div class="timeline-step"><span class="dot"></span>MVP2</div>
+    </div>
+    <div class="cta-row" style="margin-top: 28px;">
+      <a href="valor-do-ask.html" class="btn btn-primary">Ask Value</a>
+    </div>
+  </div>
+</section>
+
+<section id="fundador">
+  <div class="container">
+    <div class="section-label">Founder</div>
+    <h2>Who's behind Kaiza</h2>
+    <div class="founder">
+      <div class="avatar">PA</div>
+      <div>
+        <h3>Pedro Andrade</h3>
+        <p>Product Strategy / Service Design. Prior experience at Natura&nbsp;&amp;Co (SuperApp, 7.5 million consultants) and running his own retail operation (market4u).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contato" class="contact-section">
+  <div class="container">
+    <div class="section-label">Contact</div>
+    <h2>Want to talk about the thesis?</h2>
+    <p class="lead">Get in touch.</p>
+    <div class="contact-box">
+      <a class="contact-link" href="mailto:pedro.kaiza@hotmail.com">
+        <span class="icon">✉</span> pedro.kaiza@hotmail.com
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    Kaiza — © 2026
+  </div>
+</footer>
+
+</body>
+</html>
